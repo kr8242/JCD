@@ -1,0 +1,15 @@
+{
+  "name": "jangchungdong-web",
+  "version": "1.0.0",
+  "description": "장충동왕국밥 공식 웹사이트",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.8",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0"
+  }
+}

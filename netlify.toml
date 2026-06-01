@@ -1,0 +1,15 @@
+[build]
+  publish = "public"
+
+[functions]
+  external_node_modules = ["express"]
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/server/api/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/auth/*"
+  to = "/.netlify/functions/server/auth/:splat"
+  status = 200
