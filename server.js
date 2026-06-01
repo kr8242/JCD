@@ -1,3 +1,6 @@
+const mongoose = require('mongoose');
+const MongoStore = require('connect-mongo');
+const serverless = require('serverless-http');
 const express = require('express');
 const session = require('express-session');
 const axios = require('axios');
@@ -5,6 +8,12 @@ const path = require('path');
 require('dotenv').config();
 
 const app = express();
+let isConnected = false;
+const connectDB = async () => {
+    if (isConnected) return;
+    await mongoose.connect(process.env.MONGO_URI);
+    isConnected = true;
+};
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -14,8 +23,19 @@ app.use(session({
     secret: 'jangchung-dong-gukbap-secret-key',
     resave: false,
     saveUninitialized: false,
+    store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),
     cookie: { maxAge: 60 * 60 * 1000 } // 1시간 유지
 }));
+
+// [덤 조각] 모든 요청 전에 DB가 연결되어 있는지 체크하는 미들웨어
+app.use(async (req, res, next) => {
+    try {
+        await connectDB();
+        next();
+    } catch (err) {
+        res.status(500).json({ error: '데이터베이스 연결에 실패했습니다.' });
+    }
+});
 
 // [메모리 DB] 실시간 상태 및 권한 제어 데이터
 let addedAdmins = []; // 부관리자 유저네임 리스트
@@ -163,9 +183,7 @@ app.delete('/api/news/:id', verifyAdmin, (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`================================================================`);
-    console.log(` 장충동왕국밥 통합 백엔드가 활성화되었습니다.`);
-    console.log(` 접속 주소: http://localhost:${PORT}`);
-    console.log(`================================================================`);
-});
+// 기존 app.listen(...)을 지우고 아래 코드로 대체
+const serverless = require('serverless-http');
+module.exports = app;
+module.exports.handler = serverless(app);
