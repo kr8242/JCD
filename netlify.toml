@@ -1,8 +1,8 @@
 [build]
-  publish = "public"
+  publish = "public" # 또는 index.html이 들어있는 폴더명
 
 [functions]
-  external_node_modules = ["express"]
+  directory = "netlify/functions"
 
 [[redirects]]
   from = "/api/*"
