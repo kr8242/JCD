@@ -66,6 +66,22 @@ let stockData = {
     monthlyChange: '0.00%↓'
 };
 
+// 보도자료 데이터 틀
+const PressSchema = new mongoose.Schema({
+    title: String,
+    content: String,
+    date: { type: Date, default: Date.now }
+});
+const Press = mongoose.models.Press || mongoose.model('Press', PressSchema);
+
+// 주가 현황 데이터 틀
+const StockSchema = new mongoose.Schema({
+    price: Number,
+    change: Number,
+    updatedAt: { type: Date, default: Date.now }
+});
+const Stock = mongoose.models.Stock || mongoose.model('Stock', StockSchema);
+
 // [미들웨어] 최고 관리자(kr8242) 및 부관리자 권한 검증
 const verifyAdmin = (req, res, next) => {
     const user = req.session.user;
@@ -118,14 +134,49 @@ app.get('/auth/logout', (req, res) => {
 });
 
 // [API] 전체 화면 초기화 데이터 전송
-app.get('/api/init-data', (req, res) => {
-    res.json({
-        user: req.session.user || null,
-        addedAdmins,
-        currentStoresState,
-        pressReleases,
-        stockData
-    });
+// 1. 디스코드 로그인 시작 주소
+app.get('/auth/discord', (req, res) => {
+    const redirectUri = encodeURIComponent(process.env.DISCORD_REDIRECT_URI);
+    const discordUrl = `https://discord.com/api/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=identify`;
+    res.redirect(discordUrl);
+});
+
+// 2. 디스코드 로그인 완료 후 콜백 주소
+app.get('/auth/discord/callback', async (req, res) => {
+    const { code } = req.query;
+    if (!code) return res.redirect('/');
+
+    try {
+        // 디스코드 토큰 요청 및 사용자 정보 가져오는 기존 로직 자리
+        // (세션에 유저 정보를 저장하는 기존 코드가 있다면 여기에 포함됩니다)
+        req.session.user = { username: "인증된 사용자" }; // 예시 세션 저장
+        res.redirect('/');
+    } catch (err) {
+        res.status(500).send('디스코드 로그인 실패');
+    }
+});
+
+// 3. 주가 및 보도자료 데이터 가져오기 API (몽고DB 조회)
+app.get('/api/init-data', async (req, res) => {
+    try {
+        // DB에서 데이터 긁어오기
+        const newsList = await Press.find({}).sort({ date: -1 });
+        const stockData = await Stock.findOne({}).sort({ updatedAt: -1 });
+
+        // 만약 완전히 새 DB라 데이터가 하나도 없다면 프론트가 안 깨지게 기본값(더미) 제공
+        const defaultStock = stockData || { price: 50000, change: 0 };
+        const defaultNews = newsList.length > 0 ? newsList : [
+            { title: "장충동왕국밥 서버 오픈", content: "몽고DB 데이터베이스가 성공적으로 연동되었습니다." }
+        ];
+
+        res.json({
+            pressReleases: defaultNews,
+            stock: defaultStock,
+            user: req.session.user || null
+        });
+    } catch (err) {
+        res.status(500).json({ error: '데이터를 불러오지 못했습니다.' });
+    }
 });
 
 // [API] 부관리자 임명 및 해임 (관리자 전용)
