@@ -51,10 +51,11 @@ app.use(session({
     secret: 'jangchung-dong-gukbap-secret-key',
     resave: false,
     saveUninitialized: false,
-    store: MongoStore.create({ 
-        mongoUrl: process.env.MONGO_URI,
-        ttl: 60 * 60 // 1시간 동안 세션 유지
-    }),
+store: MongoStore.create({ 
+    mongoUrl: process.env.MONGO_URI,
+    collectionName: 'sessions', // 이 옵션을 추가해보세요
+    ttl: 60 * 60 
+}),
     cookie: { 
         maxAge: 60 * 60 * 1000,
         secure: false // 배포 환경에 따라 https 적용 시 true로 변경 가능
