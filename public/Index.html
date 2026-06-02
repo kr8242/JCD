@@ -3,34 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>장충동왕국밥 공식 웹사이트</title>
+    <title>장충동왕국밥 | 로블록스 동탄동 NO.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 키움 버건디 포인트 컬러 */
+        .text-kiwoom { color: #820024; }
+        .bg-kiwoom { background-color: #820024; }
+        .border-kiwoom { border-color: #820024; }
+        .tab-btn.active { border-bottom: 4px solid #820024; color: #820024; font-weight: bold; }
+        .hidden-section { display: none; }
+    </style>
 </head>
-<body class="bg-gray-50 font-sans text-gray-900">
+<body class="bg-gray-100 font-sans text-gray-900">
 
-    <header class="bg-white shadow-md p-4">
-        <div class="max-w-4xl mx-auto flex justify-between items-center">
-            <h1 class="text-2xl font-extrabold text-red-600">장충동왕국밥</h1>
-            <div id="auth-section">
+    <header class="bg-white shadow-md">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex-shrink-0 flex items-center gap-2">
+                    <h1 class="text-2xl font-extrabold text-kiwoom">장충동왕국밥</h1>
                 </div>
+                <div id="auth-section" class="text-sm">
+                    </div>
+            </div>
+            <nav class="flex space-x-8 mt-2">
+                <button class="tab-btn active pb-2" data-target="home">홈</button>
+                <button class="tab-btn pb-2 text-gray-500" data-target="about">사업소개</button>
+                <button class="tab-btn pb-2 text-gray-500" data-target="operations">운영현황</button>
+                <button class="tab-btn pb-2 text-gray-500" data-target="press">보도자료</button>
+                <button class="tab-btn pb-2 text-gray-500" data-target="stock">주가</button>
+            </nav>
         </div>
     </header>
 
-    <main class="max-w-4xl mx-auto p-6 mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+    <main class="max-w-5xl mx-auto p-6 mt-4">
         
-        <section class="bg-white p-6 rounded-lg shadow">
-            <h2 class="text-xl font-bold mb-4 border-b pb-2">실시간 주가 현황</h2>
-            <div class="flex items-center text-3xl">
-                <span id="stock-price" class="font-bold text-gray-800">로딩중...</span>
-                <span id="stock-change" class="text-lg ml-3"></span>
+        <section id="home" class="page-section grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white p-6 rounded-lg shadow border-t-4 border-kiwoom md:col-span-2">
+                <h2 class="text-2xl font-bold mb-4">로블록스 동탄동 NO.1 음식점</h2>
+                <ul class="list-disc pl-5 space-y-2 text-gray-700">
+                    <li>로블록스 동탄동 V2 출발부터 있던 전통있는 요식업.</li>
+                    <li>로블록스 동탄동 V2 요식업 최초 야외석 운영.</li>
+                    <li>로블록스 동탄동 V2 요식업 역대 첫번째 홍보물 제작.</li>
+                    <li>로블록스 동탄동 V2 사기업 최초 주식시장 상장.</li>
+                    <li>로블록스 동탄동 사기업 역대 첫번째 시가총액 100억원 달성.</li>
+                </ul>
             </div>
-            <p class="text-sm text-gray-400 mt-2">서버에서 최신 정보를 가져오고 있습니다.</p>
+            <div class="bg-white p-6 rounded-lg shadow text-center">
+                <div class="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center border-4 border-kiwoom overflow-hidden">
+                    <span class="font-black text-kiwoom text-xs">HEROES</span>
+                </div>
+                <h3 class="font-bold text-lg">장충동왕국밥 대표이사</h3>
+                <p class="text-kiwoom font-bold mt-1">6823/jaden_houn</p>
+                <div class="mt-4 text-sm text-gray-600 text-left bg-gray-50 p-3 rounded">
+                    <p class="font-bold border-b pb-1 mb-1">과거 직책</p>
+                    <p>舊 장충동왕국밥 상무</p>
+                    <p>舊 인백 스테이크하우스 대표이사</p>
+                </div>
+            </div>
         </section>
 
-        <section class="bg-white p-6 rounded-lg shadow md:col-span-2">
-            <h2 class="text-xl font-bold mb-4 border-b pb-2">최신 보도자료</h2>
+        <section id="about" class="page-section hidden-section bg-white p-6 rounded-lg shadow">
+            <h2 class="text-2xl font-bold mb-4 border-b pb-2">사업소개</h2>
+            <p class="text-gray-600">장충동왕국밥은 최고의 맛과 서비스를 자랑하는 동탄동 1위 외식 기업입니다.</p>
+        </section>
+
+        <section id="operations" class="page-section hidden-section space-y-6">
+            <div class="bg-white p-6 rounded-lg shadow">
+                <div class="flex justify-between items-center border-b pb-2 mb-4">
+                    <h2 class="text-2xl font-bold">장충동왕국밥 운영현황</h2>
+                    <span id="admin-badge" class="text-xs bg-red-100 text-red-600 px-2 py-1 rounded hidden">관리자</span>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="store-status-container">
+                    <div class="border p-4 rounded-lg bg-gray-50 relative">
+                        <h3 class="font-bold text-lg mb-2">1호점</h3>
+                        <p class="text-green-600 font-bold">운영중 <span class="text-orange-500">(혼잡)</span> <span class="text-blue-500">(정배중)</span></p>
+                        <p class="text-sm text-gray-600 mt-2">비고 : X</p>
+                        <button class="admin-edit-btn absolute top-4 right-4 text-xs bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded hidden">수정하기</button>
+                    </div>
+                    <div class="border p-4 rounded-lg bg-gray-50 relative">
+                        <h3 class="font-bold text-lg mb-2">2호점</h3>
+                        <p class="text-red-500 font-bold">운영중단</p>
+                        <p class="text-sm text-gray-600 mt-2">비고 : 인원부족으로 인한 운영중단</p>
+                        <button class="admin-edit-btn absolute top-4 right-4 text-xs bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded hidden">수정하기</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-blue-50 p-6 rounded-lg shadow border border-blue-100">
+                <h3 class="font-bold text-lg mb-3">운영현황 필독정보</h3>
+                <ul class="text-sm space-y-2 text-gray-700">
+                    <li><span class="font-bold text-green-600">운영중</span> : 매장 이용이 가능하다는 표시입니다.</li>
+                    <li><span class="font-bold text-red-500">운영중단</span> : 매장 이용이 불가능 하다는 표시입니다.</li>
+                    <li><span class="font-bold text-gray-500">브레이크</span> : 매장 이용이 일시적으로 불가능 하다는 표시입니다.</li>
+                    <li><span class="font-bold text-blue-500">(정배중)</span> : 매장 이용이 정기배달로 인하여 일시적으로 불가능 하다는 표시입니다.</li>
+                    <li><span class="font-bold text-orange-500">(혼잡)</span> : 매장 이용시 직원이 1~2명이 있으므로 혼잡할 수 있다는 표시입니다.</li>
+                    <li><span class="font-bold text-green-500">(양호)</span> : 매장 이용시 직원이 2명 이상이 있으므로 양호하다는 표시입니다.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="press" class="page-section hidden-section bg-white p-6 rounded-lg shadow">
+            <h2 class="text-2xl font-bold mb-4 border-b pb-2">보도자료</h2>
             <div id="news-container" class="space-y-4">
-                <p class="text-gray-500 animate-pulse">데이터를 불러오는 중입니다...</p>
+                <p class="text-gray-500">데이터를 불러오는 중입니다...</p>
+            </div>
+        </section>
+
+        <section id="stock" class="page-section hidden-section bg-white p-6 rounded-lg shadow">
+            <h2 class="text-2xl font-bold mb-6 border-b pb-2">장충동왕국밥 현재 주가</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <div class="mb-6">
+                        <p class="text-gray-500 text-sm">현재 호가</p>
+                        <div class="flex items-end gap-3">
+                            <span id="stock-price" class="text-4xl font-extrabold text-gray-900">로딩중...</span>
+                            <span id="stock-change" class="text-xl font-bold pb-1"></span>
+                        </div>
+                    </div>
+                    <div class="space-y-3 text-gray-700 bg-gray-50 p-4 rounded border">
+                        <p class="flex justify-between"><span>시가총액 :</span> <span class="font-bold">₩10,000,000,000</span></p>
+                        <p class="flex justify-between"><span>총 발행 수 :</span> <span class="font-bold">46,500,000주</span></p>
+                        <p class="flex justify-between"><span>대주주 :</span> <span class="font-bold">요식팩토리(51%)</span></p>
+                        <p class="flex justify-between text-blue-600"><span>4월 대비 상승률 :</span> <span class="font-bold">(0.00%↓)</span></p>
+                    </div>
+                </div>
+                <div class="bg-gray-100 flex items-center justify-center h-48 rounded border border-gray-300">
+                    <span class="text-gray-400 font-bold">(그래프 영역)</span>
+                </div>
             </div>
         </section>
 
