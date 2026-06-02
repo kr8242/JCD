@@ -3,140 +3,608 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>장충동왕국밥 | 로블록스 동탄동 NO.1</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>장충동왕국밥 웹사이트</title>
     <style>
-        /* 키움 버건디 포인트 컬러 */
-        .text-kiwoom { color: #820024; }
-        .bg-kiwoom { background-color: #820024; }
-        .border-kiwoom { border-color: #820024; }
-        .tab-btn.active { border-bottom: 4px solid #820024; color: #820024; font-weight: bold; }
-        .hidden-section { display: none; }
+       @font-face {
+            font-family: 'NexonLv1Gothic';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-04@2.1/NEXON Lv1 Gothic OTF Light.woff') format('woff');
+            font-weight: 400;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'NexonLv1Gothic';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-04@2.1/NEXON Lv1 Gothic OTF Bold.woff') format('woff');
+            font-weight: 700;
+            font-display: swap;
+        }
+
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'NexonLv1Gothic', sans-serif;
+            background-color: #000000;
+            color: #ffffff;
+            padding: 0 15px 15px 15px;
+            overflow-x: hidden;
+        }
+
+        /* 공통 네온 컬러 클래스 */
+        .text-neon-green { color: #00ff00; font-weight: bold; }
+        .text-neon-red { color: #ff4d4d; font-weight: bold; }
+        .text-neon-blue { color: #00a2ff; font-weight: bold; }
+        .text-neon-orange { color: #ff4500; font-weight: bold; }
+        .text-neon-salmon { color: #ff9f9f; font-weight: bold; }
+        .text-neon-lightgreen { color: #39ff14; font-weight: bold; }
+
+        /* --- 상단 네비게이션 --- */
+        .top-navbar {
+            display: flex;
+            align-items: center;
+            height: 60px;
+            padding: 0 15px;
+            background-color: #000000;
+            position: relative;
+        }
+        .nav-logo-area { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .nav-logo-img { height: 35px; width: auto; }
+        .nav-logo-text { font-weight: 700; font-size: 22px; color: #ffc000; }
+        
+        .nav-menu-links { display: flex; gap: 25px; margin-left: 35px; font-size: 17px; }
+        .nav-item { color: #ffffff; text-decoration: none; cursor: pointer; }
+        .nav-item.active { color: #ffc000; }
+        
+        .nav-right-area {
+            position: absolute;
+            right: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .discord-btn {
+            background-color: #5865F2;
+            color: #ffffff;
+            border: none;
+            padding: 6px 14px;
+            font-family: 'NexonLv1Gothic', sans-serif;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        .discord-btn:hover { background-color: #4752C4; }
+        
+        .admin-toggle { color: #555; cursor: default; font-size: 14px; display: none; }
+        .admin-toggle.active { color: #00ff00; font-weight: bold; display: inline; }
+
+        /* --- 메인 황색 틀 --- */
+        .main-window-frame {
+            border: 4px solid #ffc000;
+            background-color: #000000;
+            width: 100%;
+            position: relative;
+        }
+
+        .page-view { display: none; width: 100%; flex-direction: column; }
+        .page-view.active-view { display: flex; }
+
+        /* ==================== [페이지 1: 홈] ==================== */
+        .section-intro-top {
+            border-bottom: 4px solid #ffc000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 35px;
+        }
+        .intro-header-title { font-size: 34px; font-weight: 700; line-height: 1.4; margin-bottom: 25px; }
+        .intro-bullet-list { list-style: none; line-height: 2.1; font-size: 15px; }
+        .intro-bullet-list li::before { content: "• "; }
+        .intro-right-brand { text-align: center; padding-right: 50px; }
+        .brand-logo-large { width: 150px; height: auto; }
+        .brand-text-large { color: #ffc000; font-size: 24px; font-weight: bold; margin-top: 15px; }
+
+        .section-intro-bottom { display: grid; grid-template-columns: 38% 30% 32%; }
+        .intro-grid-box { display: flex; flex-direction: column; }
+        .intro-grid-box:not(:last-child) { border-right: 4px solid #ffc000; }
+        
+        .grid-box-title { border-bottom: 4px solid #ffc000; padding: 12px 20px; font-size: 20px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        .grid-box-body { padding: 20px; position: relative; min-height: 220px; }
+        
+        .ceo-meta-text { font-size: 22px; font-weight: bold; margin-bottom: 15px; }
+        .ceo-history-list { font-size: 15px; line-height: 1.8; }
+        .ceo-avatar-img { position: absolute; bottom: 0; right: 20px; width: 110px; height: auto; }
+        .stock-row { margin-bottom: 10px; font-size: 16px; }
+
+        /* ==================== [페이지 2: 운영현황] ==================== */
+        .section-status-split { display: grid; grid-template-columns: 35% 65%; }
+        .status-left-pane { border-right: 4px solid #ffc000; display: flex; flex-direction: column; }
+        .status-right-pane { display: flex; flex-direction: column; align-items: flex-start; }
+        
+        .pane-contents { padding: 30px; line-height: 2.3; font-size: 17px; width: 100%; }
+        .store-status-block { margin-bottom: 40px; border-bottom: 1px dashed #333; padding-bottom: 20px; }
+        .store-status-block:last-child { border-bottom: none; }
+        .store-title-text { font-size: 28px; font-weight: bold; }
+        
+        /* 수정하기 및 지점추가 버튼 기본 상태: 숨김(none) 처리 */
+        .pixel-rect-btn {
+            background-color: #ffc000; color: #000000; border: none; padding: 6px 16px;
+            font-family: 'NexonLv1Gothic', sans-serif; font-size: 14px; font-weight: bold;
+            cursor: pointer; margin-top: 10px; margin-right: 10px; display: none;
+        }
+        
+        .dev-add-btn {
+            background-color: #00ff00; color: #000000; border: none; padding: 4px 12px;
+            font-family: 'NexonLv1Gothic', sans-serif; font-size: 13px; font-weight: bold;
+            cursor: pointer; display: none;
+        }
+
+        .info-title-box {
+            border-bottom: 4px solid #ffc000; border-right: 4px solid #ffc000;
+            padding: 12px 20px; font-size: 20px; font-weight: bold;
+        }
+
+        /* --- 팝업 모달 스타일 --- */
+        .popup-overlay {
+            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); z-index: 100;
+            align-items: center; justify-content: center;
+        }
+        .p4-center-modal { width: 80%; max-width: 850px; border: 4px solid #ffc000; background-color: #000000; padding: 40px; }
+        .p4-text-row { font-size: 24px; font-weight: bold; margin-bottom: 20px; }
+        .p4-btn-group { display: flex; gap: 15px; margin-bottom: 25px; }
+        
+        .chip-btn { font-family: 'NexonLv1Gothic', sans-serif; font-size: 18px; font-weight: bold; padding: 8px 24px; border: none; cursor: pointer; color: #000000; transition: all 0.2s; }
+        .chip-btn.green-chip { background-color: #00ff00; }
+        .chip-btn.red-chip { background-color: #ff4d4d; }
+        .chip-btn.salmon-chip { background-color: #ff9f9f; }
+        .chip-btn.lightgreen-chip { background-color: #39ff14; }
+        .chip-btn.orange-chip { background-color: #ff4500; }
+        .chip-btn.blue-chip { background-color: #00a2ff; }
+        
+        .chip-btn.selected-chip {
+            outline: 3px solid #ffffff;
+            outline-offset: 3px;
+            box-shadow: 0 0 10px #ffffff;
+        }
+
+        .modal-input-field {
+            width: 100%; background-color: #111; border: 2px solid #ffc000; color: #fff;
+            padding: 10px; font-family: 'NexonLv1Gothic', sans-serif; font-size: 16px; margin-top: 5px;
+        }
+        
+        .chip-btn.action-submit { background-color: #00ff00; font-size: 22px; padding: 12px 40px; margin-top: 15px;}
+        .chip-btn.action-close { background-color: #ff4d4d; font-size: 22px; padding: 12px 40px; margin-top: 15px; margin-left: 15px;}
+
+        /* ==================== [페이지 4: 보도자료] ==================== */
+        .press-title-box {
+            border-bottom: 4px solid #ffc000; border-right: 4px solid #ffc000;
+            padding: 12px 20px; font-size: 20px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; width: auto; display: inline-flex; min-width: 250px;
+        }
+        .press-info-body { padding: 30px; line-height: 2.5; font-size: 18px; min-height: 350px; }
+        .press-item { margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px dashed #444; }
+        .press-item-title { font-size: 22px; font-weight: bold; color: #ffc000; margin-bottom: 5px; display: flex; align-items: center; }
+
+        /* 보도자료 삭제 버튼 */
+        .delete-press-btn {
+            background-color: #ff4d4d; color: #000000; border: none; padding: 4px 10px;
+            font-family: 'NexonLv1Gothic', sans-serif; font-size: 14px; font-weight: bold;
+            cursor: pointer; display: none; margin-left: 15px; border-radius: 3px;
+        }
+
+        /* ==================== [페이지 5: 주가] ==================== */
+        .stock-title-box {
+            border-bottom: 4px solid #ffc000; border-right: 4px solid #ffc000;
+            align-self: flex-start; padding: 12px 20px; font-size: 20px; font-weight: bold;
+        }
+        .stock-info-body { padding: 30px; line-height: 2.5; font-size: 18px; border-bottom: 4px solid #ffc000; }
+        .empty-graph-container { background-color: #000000; min-height: 350px; }
+
     </style>
 </head>
-<body class="bg-gray-100 font-sans text-gray-900">
+<body>
 
-    <header class="bg-white shadow-md">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex-shrink-0 flex items-center gap-2">
-                    <h1 class="text-2xl font-extrabold text-kiwoom">장충동왕국밥</h1>
-                </div>
-                <div id="auth-section" class="text-sm">
-                    </div>
-            </div>
-            <nav class="flex space-x-8 mt-2">
-                <button class="tab-btn active pb-2" data-target="home">홈</button>
-                <button class="tab-btn pb-2 text-gray-500" data-target="about">사업소개</button>
-                <button class="tab-btn pb-2 text-gray-500" data-target="operations">운영현황</button>
-                <button class="tab-btn pb-2 text-gray-500" data-target="press">보도자료</button>
-                <button class="tab-btn pb-2 text-gray-500" data-target="stock">주가</button>
-            </nav>
-        </div>
-    </header>
+<div class="top-navbar">
+    <div class="nav-logo-area" onclick="navigate('home', this.nextElementSibling.children[0])">
+        <img src="images/Logo1.png" alt="로고" class="nav-logo-img" onerror="this.src='https://placehold.co/40x40?text=Logo1'">
+        <span class="nav-logo-text">장충동왕국밥</span>
+    </div>
+    <div class="nav-menu-links">
+        <span class="nav-item active" onclick="navigate('home', this)">홈</span>
+        <span class="nav-item" onclick="alert('준비 중인 메뉴입니다.')">사업소개</span>
+        <span class="nav-item" onclick="navigate('status', this)">운영현황</span>
+        <span class="nav-item" onclick="navigate('press', this)">보도자료</span>
+        <span class="nav-item" onclick="navigate('stock', this)">주가</span>
+    </div>
+    
+    <div class="nav-right-area">
+        <button id="discord-btn" class="discord-btn" onclick="handleDiscordLogin()">디스코드 로그인</button>
+        <span id="admin-badge" class="admin-toggle">(개발자 권한 활성화)</span>
+    </div>
+</div>
 
-    <main class="max-w-5xl mx-auto p-6 mt-4">
-        
-        <section id="home" class="page-section grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="bg-white p-6 rounded-lg shadow border-t-4 border-kiwoom md:col-span-2">
-                <h2 class="text-2xl font-bold mb-4">로블록스 동탄동 NO.1 음식점</h2>
-                <ul class="list-disc pl-5 space-y-2 text-gray-700">
+<div class="main-window-frame">
+
+    <!-- 1. 홈 화면 -->
+    <div id="view-home" class="page-view active-view">
+        <div class="section-intro-top">
+            <div>
+                <h1 class="intro-header-title">로블록스 동탄동 NO.1 음식<br>점. 장충동왕국밥.</h1>
+                <ul class="intro-bullet-list">
                     <li>로블록스 동탄동 V2 출발부터 있던 전통있는 요식업.</li>
                     <li>로블록스 동탄동 V2 요식업 최초 야외석 운영.</li>
-                    <li>로블록스 동탄동 V2 요식업 역대 첫번째 홍보물 제작.</li>
-                    <li>로블록스 동탄동 V2 사기업 최초 주식시장 상장.</li>
-                    <li>로블록스 동탄동 사기업 역대 첫번째 시가총액 100억원 달성.</li>
+                    <li>로블록스 동탄동 V2 요식업 역대 첫번째 홍보물 제작</li>
+                    <li>로블록스 동탄동 V2 사기업 최초 주식시장 상장</li>
+                    <li>로블록스 동탄동 사기업 역대 첫번째 시가총액 100억원 달성.(상장시 시가총액 100억원 이상 제외)</li>
                 </ul>
             </div>
-            <div class="bg-white p-6 rounded-lg shadow text-center">
-                <div class="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center border-4 border-kiwoom overflow-hidden">
-                    <span class="font-black text-kiwoom text-xs">HEROES</span>
-                </div>
-                <h3 class="font-bold text-lg">장충동왕국밥 대표이사</h3>
-                <p class="text-kiwoom font-bold mt-1">6823/jaden_houn</p>
-                <div class="mt-4 text-sm text-gray-600 text-left bg-gray-50 p-3 rounded">
-                    <p class="font-bold border-b pb-1 mb-1">과거 직책</p>
-                    <p>舊 장충동왕국밥 상무</p>
-                    <p>舊 인백 스테이크하우스 대표이사</p>
+            <div class="intro-right-brand">
+                <img src="images/Logo2.png" alt="장충동왕국밥" class="brand-logo-large" onerror="this.src='https://placehold.co/120x120?text=Logo2'">
+                <div class="brand-text-large">장충동왕국밥</div>
+            </div>
+        </div>
+        <div class="section-intro-bottom">
+            <div class="intro-grid-box">
+                <div class="grid-box-title">장충동왕국밥 대표이사</div>
+                <div class="grid-box-body">
+                    <div class="ceo-meta-text">6823/jaden_houn</div>
+                    <div class="ceo-history-list">과거 직책<br>舊 장충동왕국밥 상무<br>舊 인백 스테이크하우스 대표이사<br>現 장충동왕국밥 대표이사</div>
+                    <img src="images/CEO.png" alt="Avatar" class="ceo-avatar-img" onerror="this.src='https://placehold.co/100x110?text=Avatar'">
                 </div>
             </div>
-        </section>
+            <div class="intro-grid-box">
+                <div class="grid-box-title">장충동왕국밥 현재 주가</div>
+                <div class="grid-box-body">
+                    <div class="stock-row" style="font-size:18px;"><strong>현재 호가 : ₩0,000</strong></div>
+                    <div class="stock-row text-neon-red">+ 0,000 (0.00% ↑)</div>
+                    <div class="stock-row" style="margin-top:15px;">시가총액 : ₩00,000,000,000</div>
+                    <div class="stock-row">총 발행 수 : 46,500,000주</div>
+                    <div class="stock-row">대주주 : 요식팩토리(51%)</div>
+                    <div class="stock-row">4월 대비 상승률 : <span class="text-neon-blue">(0.00% ↓)</span></div>
+                </div>
+            </div>
+            <div class="intro-grid-box"><div class="grid-box-body"></div></div>
+        </div>
+    </div>
 
-        <section id="about" class="page-section hidden-section bg-white p-6 rounded-lg shadow">
-            <h2 class="text-2xl font-bold mb-4 border-b pb-2">사업소개</h2>
-            <p class="text-gray-600">장충동왕국밥은 최고의 맛과 서비스를 자랑하는 동탄동 1위 외식 기업입니다.</p>
-        </section>
+    <!-- 2. 운영현황 화면 -->
+    <div id="view-status" class="page-view">
+        <div class="section-status-split">
+            <div class="status-left-pane">
+                <div class="grid-box-title">
+                    <span>장충동왕국밥 운영현황</span>
+                    <button id="btn-add-branch" class="dev-add-btn" onclick="addNewStoreBranch()">+ 지점 추가</button>
+                </div>
+                <div id="store-list-container" class="pane-contents">
+                    <div class="store-status-block">
+                        <div class="store-title-area">
+                            <span class="store-name">1호점</span> : 
+                            <span class="store-status-text text-neon-green">운영중</span>
+                            <span class="store-badge-area">
+                                <span class="text-neon-red" style="font-size:14px; vertical-align:super;">(혼잡)</span>
+                                <span class="text-neon-blue" style="font-size:14px; vertical-align:super;">(정배중)</span>
+                            </span>
+                        </div>
+                        <div class="store-note-text" style="margin-top:5px;">비고 : X</div>
+                        <button class="pixel-rect-btn edit-btn" onclick="openPopup(this)">수정하기</button>
+                    </div>
+                    <div class="store-status-block">
+                        <div class="store-title-area">
+                            <span class="store-name">2호점</span> : 
+                            <span class="store-status-text text-neon-red">운영중단</span>
+                            <span class="store-badge-area"></span>
+                        </div>
+                        <div class="store-note-text" style="margin-top:5px;">비고 : 인원부족으로 인한 운영중단</div>
+                        <button class="pixel-rect-btn edit-btn" onclick="openPopup(this)">수정하기</button>
+                    </div>
+                </div>
+            </div>
+            <div class="status-right-pane">
+                <div class="info-title-box">장충동왕국밥 운영현황 필독정보</div>
+                <div class="pane-contents" style="padding-top:20px;">
+                    <div><span class="text-neon-green">운영중</span> : 매장 이용이 가능하다는 표시입니다.</div>
+                    <div><span class="text-neon-red">운영중단</span> : 매장 이용이 불가능 하다는 표시입니다.</div>
+                    <div><span class="text-neon-salmon">브레이크</span> : 매장 이용이 일시적으로 불가능 하다는 표시입니다.</div>
+                    <div style="margin-top:10px;"><span class="text-neon-blue">(정배중)</span> : 매장 이용이 정기배달로 인하여 일시적으로 불가능 하다는 표시입니다.</div>
+                    <div><span class="text-neon-orange">(혼잡)</span> : 매장 이용시 직원이 1~2명이 있으므로 혼잡할 수 있다는 표시입니다.</div>
+                    <div><span class="text-neon-lightgreen">(양호)</span> : 매장 이용시 직원이 2명 이상이 있으므로 양호하다는 표시입니다.</div>
+                </div>
+            </div>
+        </div>
 
-        <section id="operations" class="page-section hidden-section space-y-6">
-            <div class="bg-white p-6 rounded-lg shadow">
-                <div class="flex justify-between items-center border-b pb-2 mb-4">
-                    <h2 class="text-2xl font-bold">장충동왕국밥 운영현황</h2>
-                    <span id="admin-badge" class="text-xs bg-red-100 text-red-600 px-2 py-1 rounded hidden">관리자</span>
+        <!-- 실시간 연동 인터랙티브 관리자 팝업 윈도우 -->
+        <div id="edit-popup" class="popup-overlay">
+            <div class="p4-center-modal">
+                <div id="modal-text-before" class="p4-text-row" style="font-size:18px; color:#777;">수정전 : </div>
+                <div id="modal-text-after" class="p4-text-row" style="border-bottom: 2px solid #ffc000; padding-bottom:15px; margin-bottom:25px;">수정후 : </div>
+                
+                <div style="font-size:15px; color:#ffc000; margin-bottom:8px; font-weight:bold;">[1] 매장 상태 지정 (택 1)</div>
+                <div class="p4-btn-group">
+                    <button class="chip-btn green-chip" onclick="setModalStatus('운영중')">운영중</button>
+                    <button class="chip-btn red-chip" onclick="setModalStatus('운영중단')">운영중단</button>
+                    <button class="chip-btn salmon-chip" onclick="setModalStatus('브레이크')">브레이크</button>
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="store-status-container">
-                    <div class="border p-4 rounded-lg bg-gray-50 relative">
-                        <h3 class="font-bold text-lg mb-2">1호점</h3>
-                        <p class="text-green-600 font-bold">운영중 <span class="text-orange-500">(혼잡)</span> <span class="text-blue-500">(정배중)</span></p>
-                        <p class="text-sm text-gray-600 mt-2">비고 : X</p>
-                        <button class="admin-edit-btn absolute top-4 right-4 text-xs bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded hidden">수정하기</button>
-                    </div>
-                    <div class="border p-4 rounded-lg bg-gray-50 relative">
-                        <h3 class="font-bold text-lg mb-2">2호점</h3>
-                        <p class="text-red-500 font-bold">운영중단</p>
-                        <p class="text-sm text-gray-600 mt-2">비고 : 인원부족으로 인한 운영중단</p>
-                        <button class="admin-edit-btn absolute top-4 right-4 text-xs bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded hidden">수정하기</button>
-                    </div>
+                <div style="font-size:15px; color:#ffc000; margin-bottom:8px; font-weight:bold;">[2] 추가 혼잡도 및 상황 태그 (중복 선택 가능)</div>
+                <div class="p4-btn-group">
+                    <button class="chip-btn lightgreen-chip" onclick="toggleModalBadge('양호')">양호</button>
+                    <button class="chip-btn orange-chip" onclick="toggleModalBadge('혼잡')">혼잡</button>
+                    <button class="chip-btn blue-chip" onclick="toggleModalBadge('정배중')">정배중</button>
                 </div>
-            </div>
 
-            <div class="bg-blue-50 p-6 rounded-lg shadow border border-blue-100">
-                <h3 class="font-bold text-lg mb-3">운영현황 필독정보</h3>
-                <ul class="text-sm space-y-2 text-gray-700">
-                    <li><span class="font-bold text-green-600">운영중</span> : 매장 이용이 가능하다는 표시입니다.</li>
-                    <li><span class="font-bold text-red-500">운영중단</span> : 매장 이용이 불가능 하다는 표시입니다.</li>
-                    <li><span class="font-bold text-gray-500">브레이크</span> : 매장 이용이 일시적으로 불가능 하다는 표시입니다.</li>
-                    <li><span class="font-bold text-blue-500">(정배중)</span> : 매장 이용이 정기배달로 인하여 일시적으로 불가능 하다는 표시입니다.</li>
-                    <li><span class="font-bold text-orange-500">(혼잡)</span> : 매장 이용시 직원이 1~2명이 있으므로 혼잡할 수 있다는 표시입니다.</li>
-                    <li><span class="font-bold text-green-500">(양호)</span> : 매장 이용시 직원이 2명 이상이 있으므로 양호하다는 표시입니다.</li>
-                </ul>
-            </div>
-        </section>
-
-        <section id="press" class="page-section hidden-section bg-white p-6 rounded-lg shadow">
-            <h2 class="text-2xl font-bold mb-4 border-b pb-2">보도자료</h2>
-            <div id="news-container" class="space-y-4">
-                <p class="text-gray-500">데이터를 불러오는 중입니다...</p>
-            </div>
-        </section>
-
-        <section id="stock" class="page-section hidden-section bg-white p-6 rounded-lg shadow">
-            <h2 class="text-2xl font-bold mb-6 border-b pb-2">장충동왕국밥 현재 주가</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div style="font-size:15px; color:#ffc000; margin-bottom:5px; font-weight:bold;">[3] 비고(메모) 수정</div>
+                <div style="margin-bottom:25px;">
+                    <input type="text" id="modal-note-input" class="modal-input-field" placeholder="비고 입력내용이 없을 경우 X를 입력하세요.">
+                </div>
+                
                 <div>
-                    <div class="mb-6">
-                        <p class="text-gray-500 text-sm">현재 호가</p>
-                        <div class="flex items-end gap-3">
-                            <span id="stock-price" class="text-4xl font-extrabold text-gray-900">로딩중...</span>
-                            <span id="stock-change" class="text-xl font-bold pb-1"></span>
-                        </div>
-                    </div>
-                    <div class="space-y-3 text-gray-700 bg-gray-50 p-4 rounded border">
-                        <p class="flex justify-between"><span>시가총액 :</span> <span class="font-bold">₩10,000,000,000</span></p>
-                        <p class="flex justify-between"><span>총 발행 수 :</span> <span class="font-bold">46,500,000주</span></p>
-                        <p class="flex justify-between"><span>대주주 :</span> <span class="font-bold">요식팩토리(51%)</span></p>
-                        <p class="flex justify-between text-blue-600"><span>4월 대비 상승률 :</span> <span class="font-bold">(0.00%↓)</span></p>
-                    </div>
-                </div>
-                <div class="bg-gray-100 flex items-center justify-center h-48 rounded border border-gray-300">
-                    <span class="text-gray-400 font-bold">(그래프 영역)</span>
+                    <button class="chip-btn action-submit" onclick="submitStoreEdit()">수정 완료</button>
+                    <button class="chip-btn action-close" onclick="closePopup()">나가기</button>
                 </div>
             </div>
-        </section>
+        </div>
+    </div>
 
-    </main>
+    <!-- 4. 보도자료 화면 -->
+    <div id="view-press" class="page-view">
+        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 4px solid #ffc000; background-color: #000;">
+            <div class="press-title-box" style="border-bottom: none;">장충동왕국밥 보도자료</div>
+            <button id="btn-add-press" class="dev-add-btn" style="margin-right: 30px; padding: 6px 16px;" onclick="addNewPressArticle()">+ 보도자료 작성</button>
+        </div>
+        <div id="press-list-container" class="press-info-body">
+            <div class="press-item">
+                <div class="press-item-title">
+                    [공지] 장충동왕국밥 공식 웹포탈 오픈 안내
+                    <button class="delete-press-btn" onclick="deletePressArticle(this)">삭제</button>
+                </div>
+                <div>로블록스 동탄동 V2 사기업 최초 상장에 발맞추어 주주 및 고객 여러분을 위한 통합 운영 현황 판독 시스템을 배포합니다.</div>
+            </div>
+        </div>
+    </div>
 
-    <script src="./js/api.js"></script>
-    <script src="./js/app.js"></script>
+    <!-- 5. 주가 화면 -->
+    <div id="view-stock" class="page-view">
+        <div class="stock-title-box">장충동왕국밥 현재 주가</div>
+        <div class="stock-info-body">
+            <div style="font-size:26px; margin-bottom:10px;"><strong>현재 호가 : ₩0,000</strong> <span class="text-neon-red" style="font-size:20px; margin-left:10px;">+ 0,000 (0.00% ↑)</span></div>
+            <div>시가총액 : ₩00,000,000,000</div>
+            <div>총 발행 수 : 46,500,000주</div>
+            <div>대주주 : 요식팩토리(51%)</div>
+            <div>4월 대비 상승률 : <span class="text-neon-blue">(0.00% ↓)</span></div>
+        </div>
+        <div class="empty-graph-container"></div>
+    </div>
+
+</div>
+
+<script>
+    let discordUser = null;
+    let isDeveloper = false;
+
+    let currentEditBlock = null;
+    let modalSelectedStatus = "";
+    let modalSelectedBadges = [];
+
+    function navigate(viewName, clickedElement) {
+        document.querySelectorAll('.page-view').forEach(view => view.classList.remove('active-view'));
+        document.getElementById('view-' + viewName).classList.add('active-view');
+        
+        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+        if (clickedElement) clickedElement.classList.add('active');
+    }
+
+    // 개발자 권한 인증 시에만 버튼 노출(inline-block) 및 비인증 시 즉시 숨김(none) 제어
+    function applyDeveloperAuthority(status) {
+        isDeveloper = status;
+        const badge = document.getElementById('admin-badge');
+        const addBranchBtn = document.getElementById('btn-add-branch');
+        const addPressBtn = document.getElementById('btn-add-press');
+        const editButtons = document.querySelectorAll('.edit-btn');
+        const deletePressBtns = document.querySelectorAll('.delete-press-btn');
+
+        if (status) {
+            badge.classList.add('active');
+            addBranchBtn.style.display = 'inline-block';
+            addPressBtn.style.display = 'inline-block';
+            editButtons.forEach(el => el.style.display = 'inline-block');
+            deletePressBtns.forEach(el => el.style.display = 'inline-block');
+        } else {
+            badge.classList.remove('active');
+            addBranchBtn.style.display = 'none';
+            addPressBtn.style.display = 'none';
+            editButtons.forEach(el => el.style.display = 'none');
+            deletePressBtns.forEach(el => el.style.display = 'none');
+        }
+    }
+
+    function getStatusClass(status) {
+        if (status === '운영중') return 'text-neon-green';
+        if (status === '운영중단') return 'text-neon-red';
+        if (status === '브레이크') return 'text-neon-salmon';
+        return '';
+    }
+
+    function getBadgesHTML(badges) {
+        return badges.map(b => {
+            if (b === '양호') return `<span class="text-neon-lightgreen" style="font-size:14px; vertical-align:super;">(양호)</span>`;
+            if (b === '혼잡') return `<span class="text-neon-red" style="font-size:14px; vertical-align:super;">(혼잡)</span>`;
+            if (b === '정배중') return `<span class="text-neon-blue" style="font-size:14px; vertical-align:super;">(정배중)</span>`;
+            return '';
+        }).join(' ');
+    }
+
+    function updateModalPreview() {
+        if (!currentEditBlock) return;
+        const storeName = currentEditBlock.querySelector('.store-name').innerText;
+        document.getElementById('modal-text-after').innerHTML = `수정후 : ${storeName} : <span class="${getStatusClass(modalSelectedStatus)}">${modalSelectedStatus}</span> ${getBadgesHTML(modalSelectedBadges)}`;
+    }
+
+    function highlightModalChips() {
+        document.querySelectorAll('.p4-btn-group .chip-btn').forEach(btn => {
+            const text = btn.innerText;
+            if (text === modalSelectedStatus || modalSelectedBadges.includes(text)) {
+                btn.classList.add('selected-chip');
+            } else {
+                btn.classList.remove('selected-chip');
+            }
+        });
+    }
+
+    function openPopup(btn) {
+        if (!isDeveloper) return;
+        currentEditBlock = btn.closest('.store-status-block');
+        
+        const storeName = currentEditBlock.querySelector('.store-name').innerText;
+        const currentStatus = currentEditBlock.querySelector('.store-status-text').innerText;
+        const currentNote = currentEditBlock.querySelector('.store-note-text').innerText.replace("비고 : ", "");
+        const badgeHTML = currentEditBlock.querySelector('.store-badge-area').innerHTML;
+        
+        modalSelectedStatus = currentStatus;
+        modalSelectedBadges = [];
+        if (badgeHTML.includes("양호")) modalSelectedBadges.push("양호");
+        if (badgeHTML.includes("혼잡")) modalSelectedBadges.push("혼잡");
+        if (badgeHTML.includes("정배중")) modalSelectedBadges.push("정배중");
+        
+        document.getElementById('modal-note-input').value = currentNote;
+        document.getElementById('modal-text-before').innerHTML = `수정전 : ${storeName} : <span class="${getStatusClass(currentStatus)}">${currentStatus}</span> ${badgeHTML}`;
+        
+        updateModalPreview();
+        highlightModalChips();
+        
+        document.getElementById('edit-popup').style.display = 'flex';
+    }
+
+    function closePopup() { document.getElementById('edit-popup').style.display = 'none'; }
+
+    function setModalStatus(status) {
+        modalSelectedStatus = status;
+        updateModalPreview();
+        highlightModalChips();
+    }
+
+    function toggleModalBadge(badge) {
+        const idx = modalSelectedBadges.indexOf(badge);
+        if (idx > -1) {
+            modalSelectedBadges.splice(idx, 1);
+        } else {
+            modalSelectedBadges.push(badge);
+        }
+        updateModalPreview();
+        highlightModalChips();
+    }
+
+    function submitStoreEdit() {
+        if (!isDeveloper || !currentEditBlock) return;
+        
+        const noteValue = document.getElementById('modal-note-input').value.trim() || "X";
+        
+        const statusSpan = currentEditBlock.querySelector('.store-status-text');
+        statusSpan.innerText = modalSelectedStatus;
+        statusSpan.className = `store-status-text ${getStatusClass(modalSelectedStatus)}`;
+        
+        currentEditBlock.querySelector('.store-badge-area').innerHTML = getBadgesHTML(modalSelectedBadges);
+        currentEditBlock.querySelector('.store-note-text').innerText = `비고 : ${noteValue}`;
+        
+        closePopup();
+        alert("운영현황 데이터가 실시간으로 동기화되었습니다!");
+    }
+
+    // 보도자료 생성
+    function addNewPressArticle() {
+        if (!isDeveloper) return;
+        
+        const title = prompt("보도자료 제목을 입력하세요:");
+        if (!title || !title.trim()) return;
+        
+        const content = prompt("보도자료 본문 내용을 입력하세요:");
+        if (!content || !content.trim()) return;
+
+        const container = document.getElementById('press-list-container');
+        const newArticle = document.createElement('div');
+        newArticle.className = 'press-item';
+        newArticle.innerHTML = `
+            <div class="press-item-title">
+                ${title.trim()}
+                <button class="delete-press-btn" style="display:inline-block;" onclick="deletePressArticle(this)">삭제</button>
+            </div>
+            <div>${content.trim()}</div>
+        `;
+        
+        container.insertBefore(newArticle, container.firstChild);
+        alert("새로운 보도자료 뉴스가 정상 등록되었습니다.");
+    }
+
+    // 보도자료 삭제
+    function deletePressArticle(btn) {
+        if (!isDeveloper) return;
+        
+        if (confirm("이 보도자료를 정말 삭제하시겠습니까?")) {
+            const pressItem = btn.closest('.press-item');
+            pressItem.remove();
+            alert("보도자료가 성공적으로 삭제되었습니다.");
+        }
+    }
+
+    function addNewStoreBranch() {
+        if (!isDeveloper) return;
+        
+        const storeName = prompt("추가할 지점명을 입력하세요 (예: 3호점):");
+        if (!storeName || !storeName.trim()) return;
+        
+        const storeStatus = prompt("상태를 입력하세요 (운영중 / 운영중단 / 브레이크):", "운영중");
+        if (!storeStatus) return;
+        
+        const storeNote = prompt("비고 사항을 입력하세요:", "X");
+        if (!storeNote) return;
+
+        const container = document.getElementById('store-list-container');
+        const newBlock = document.createElement('div');
+        newBlock.className = 'store-status-block';
+        newBlock.innerHTML = `
+            <div class="store-title-area">
+                <span class="store-name">${storeName.trim()}</span> : 
+                <span class="store-status-text ${getStatusClass(storeStatus)}">${storeStatus}</span>
+                <span class="store-badge-area"></span>
+            </div>
+            <div class="store-note-text" style="margin-top:5px;">비고 : ${storeNote}</div>
+            <button class="pixel-rect-btn edit-btn" style="display:inline-block;" onclick="openPopup(this)">수정하기</button>
+        `;
+        container.appendChild(newBlock);
+        alert(`${storeName} 지점이 추가되어 실시간 관리가 가능합니다.`);
+    }
+
+    // ★ OAtun2 관리자 권한이 추가된 로그인 함수 ★
+    function handleDiscordLogin() {
+        const btn = document.getElementById('discord-btn');
+        
+        if (!discordUser) {
+            const nameInput = prompt("디스코드 계정명을 입력해 주세요 (관리자: kr8242, OAtun2):", "kr8242");
+            if (nameInput && nameInput.trim() !== "") {
+                discordUser = nameInput.trim();
+                btn.innerText = discordUser + " (로그아웃)";
+                btn.style.backgroundColor = "#248046";
+                
+                // kr8242와 OAtun2 모두 최고 관리자 권한 부여
+                if (discordUser === "kr8242" || discordUser === "OAtun2") {
+                    alert("👑 최고 관리자(" + discordUser + ") 권한 세션이 생성되었습니다. 모든 보도자료 작성/삭제 및 실시간 운영현황 변경 권한이 부여됩니다.");
+                    applyDeveloperAuthority(true);
+                } else {
+                    alert(discordUser + "님, 로그인되었습니다. (일반 뷰어 권한)");
+                    applyDeveloperAuthority(false);
+                }
+            }
+        } else {
+            if (confirm("로그아웃 하시겠습니까?")) {
+                discordUser = null;
+                btn.innerText = "디스코드 로그인";
+                btn.style.backgroundColor = "#5865F2";
+                applyDeveloperAuthority(false);
+            }
+        }
+    }
+</script>
+<script src="js/api.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>
