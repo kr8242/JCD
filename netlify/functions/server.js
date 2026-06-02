@@ -2,16 +2,17 @@ const express = require('express');
 const session = require('express-session');
 const axios = require('axios');
 const mongoose = require('mongoose');
-// 에러 방지를 위한 수정: .default 또는 직접 가져오기
-const MongoStore = require('connect-mongo');
+// 어제 해결한 MongoStore 에러 방지용 안전한 불러오기 방식
+const MongoStore = require('connect-mongo').default || require('connect-mongo');
 const serverless = require('serverless-http');
 
 const app = express();
 
+// 1. 미들웨어 설정
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 몽고DB 연결
+// 2. 몽고DB 연결 및 스키마 정의
 let isConnected = false;
 const connectDB = async () => {
     if (isConnected) return;
@@ -19,14 +20,13 @@ const connectDB = async () => {
     isConnected = true;
 };
 
-// 스키마 정의
 const PressSchema = new mongoose.Schema({ title: String, content: String, date: { type: Date, default: Date.now } });
 const Press = mongoose.models.Press || mongoose.model('Press', PressSchema);
 
 const StockSchema = new mongoose.Schema({ price: Number, change: Number, updatedAt: { type: Date, default: Date.now } });
 const Stock = mongoose.models.Stock || mongoose.model('Stock', StockSchema);
 
-// 세션 설정 (에러 방지: 생성자 사용)
+// 3. 세션 설정 (디스코드 로그인용)
 app.use(session({
     secret: 'jangchung-dong-gukbap-secret-key',
     resave: false,
@@ -35,29 +35,34 @@ app.use(session({
         mongoUrl: process.env.MONGO_URI,
         collectionName: 'sessions' 
     }),
-    cookie: { maxAge: 60 * 60 * 1000 }
+    cookie: { maxAge: 60 * 60 * 1000 } // 1시간 유지
 }));
 
-// DB 미들웨어
+// 모든 API 요청 전 DB 연결 확인
 app.use(async (req, res, next) => {
     try { await connectDB(); next(); } 
     catch (err) { res.status(500).json({ error: 'DB 연결 실패' }); }
 });
 
-// API 라우터
+// ==========================================
+// 4. API 라우터 (데이터 통신)
+// ==========================================
 app.get('/api/init-data', async (req, res) => {
     try {
         const newsList = await Press.find({}).sort({ date: -1 });
         const stockData = await Stock.findOne({}).sort({ updatedAt: -1 });
+        
         res.json({
-            pressReleases: newsList.length > 0 ? newsList : [{ title: "서버 정상 작동", content: "데이터 연동 완료" }],
+            pressReleases: newsList.length > 0 ? newsList : [{ title: "서버 연결 완료", content: "데이터베이스 연동이 완료되었습니다." }],
             stock: stockData || { price: 50000, change: 0 },
             user: req.session.user || null
         });
     } catch (err) { res.status(500).json({ error: '데이터 로드 실패' }); }
 });
 
-// 디스코드 인증
+// ==========================================
+// 5. 디스코드 OAuth2 로그인 라우터
+// ==========================================
 app.get('/auth/discord', (req, res) => {
     const redirectUri = encodeURIComponent(process.env.DISCORD_REDIRECT_URI);
     res.redirect(`https://discord.com/api/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=identify`);
@@ -74,11 +79,23 @@ app.get('/auth/discord/callback', async (req, res) => {
             code: code,
             redirect_uri: process.env.DISCORD_REDIRECT_URI,
         }));
-        const userResponse = await axios.get('https://discord.com/api/users/@me', { headers: { Authorization: `Bearer ${tokenResponse.data.access_token}` } });
-        req.session.user = userResponse.data;
+        const userResponse = await axios.get('https://discord.com/api/users/@me', { 
+            headers: { Authorization: `Bearer ${tokenResponse.data.access_token}` } 
+        });
+        
+        req.session.user = {
+            id: userResponse.data.id,
+            username: userResponse.data.username,
+            avatar: userResponse.data.avatar
+        };
         res.redirect('/');
     } catch (err) { res.status(500).send('로그인 실패'); }
 });
 
+app.get('/auth/logout', (req, res) => {
+    req.session.destroy(() => res.redirect('/'));
+});
+
+// 6. Netlify 서버리스 환경으로 내보내기
 module.exports = app;
 module.exports.handler = serverless(app);
