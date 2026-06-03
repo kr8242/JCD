@@ -104,6 +104,7 @@
         .brand-logo-large { width: 150px; height: auto; }
         .brand-text-large { color: #ffc000; font-size: 24px; font-weight: bold; margin-top: 15px; }
 
+        /* 요청하신 비율 40% 35% 25% 적용 */
         .section-intro-bottom { display: grid; grid-template-columns: 40% 35% 25%; }
         .intro-grid-box { display: flex; flex-direction: column; }
         .intro-grid-box:not(:last-child) { border-right: 4px solid #ffc000; }
@@ -196,13 +197,9 @@
             align-self: flex-start; padding: 12px 20px; font-size: 20px; font-weight: bold;
         }
         .stock-info-body { padding: 30px; line-height: 2.5; font-size: 18px; border-bottom: 4px solid #ffc000; }
-        /* 수정 후: 명시적인 height 부여 (화면 높이에 비례하게 70vh 사용) */
-        .empty-graph-container { 
-            background-color: #000000; 
-            height: 70vh; /* 화면 전체 높이의 70%를 차지하도록 설정 */
-            min-height: 500px; /* 창을 줄여도 최소 500px은 유지 */
-            width: 100%; 
-        }
+        
+        /* 꽉 찬 대형 차트를 위한 높이 고정 */
+        .empty-graph-container { background-color: #000000; height: 70vh; min-height: 500px; width: 100%; }
 
     </style>
 </head>
@@ -270,7 +267,7 @@
             
             <div class="intro-grid-box">
                 <div class="grid-box-body" style="padding: 0;">
-                    <iframe src="stock.html" style="width: 100%; height: 100%; min-height: 280px; border: none; background: transparent;" title="미니 주식 차트"></iframe>
+                    <iframe src="stock.html" style="width: 100%; height: 100%; min-height: 180px; display: block; border: none; background: transparent;" title="미니 주식 차트"></iframe>
                 </div>
             </div>
         </div>
@@ -381,7 +378,6 @@
             <div>4월 대비 상승률 : <span class="display-aprilrate text-neon-blue">로딩중...</span></div>
         </div>
         
-        <!-- 대형 차트 구역 -->
         <div class="empty-graph-container">
             <iframe src="stock.html" style="width: 100%; height: 100%; display: block; border: none; background: transparent;" title="주식 차트"></iframe>
         </div>
@@ -403,7 +399,6 @@
         document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
         if (clickedElement) clickedElement.classList.add('active');
         
-        // SPA처럼 URL 주소창도 변경되도록 처리
         window.history.pushState({}, viewName, '/' + viewName);
     }
 
@@ -431,7 +426,7 @@
         }
     }
 
-    // [3] 매장 관리 및 모달 기능 유지
+    // [3] 매장 관리 및 모달 기능
     function getStatusClass(status) {
         if (status === '운영중') return 'text-neon-green';
         if (status === '운영중단') return 'text-neon-red';
@@ -506,7 +501,7 @@
         currentEditBlock.querySelector('.store-badge-area').innerHTML = getBadgesHTML(modalSelectedBadges);
         currentEditBlock.querySelector('.store-note-text').innerText = `비고 : ${noteValue}`;
         closePopup();
-        alert("운영현황 데이터가 실시간으로 동기화되었습니다!");
+        alert("운영현황 데이터가 임시 변경되었습니다.");
     }
 
     function addNewPressArticle() {
@@ -561,10 +556,23 @@
     }
 
     // =========================================================================
-    // [4] 백엔드 데이터 연동, 디스코드 실제 세션 및 주가 렌더링 로직 (api.js 의존)
+    // [4] 서버 통신 함수 (api.js 통합)
+    // =========================================================================
+    async function fetchInitData() {
+        try {
+            const response = await fetch('/api/init-data');
+            if (!response.ok) throw new Error(`통신 실패 (Status: ${response.status})`);
+            return await response.json();
+        } catch (error) {
+            console.error("API 통신 오류:", error);
+            return null; 
+        }
+    }
+
+    // =========================================================================
+    // [5] 시스템 초기화 및 주가 데이터 렌더링
     // =========================================================================
     async function initializeSystem() {
-        // 주소 라우팅에 따라 처음 보여줄 화면 결정 (/stock 접근 시 대응)
         if (window.location.pathname.includes('/stock')) {
             navigate('stock', document.querySelectorAll('.nav-item')[4]);
         } else if (window.location.pathname.includes('/status')) {
@@ -574,61 +582,64 @@
         }
 
         try {
-            // api.js의 fetchInitData 함수를 통해 서버 데이터 로드
-            if (typeof fetchInitData === 'function') {
-                const data = await fetchInitData();
-                if (data) {
-                    // 1) 로그인 세션 및 OAtun2 권한 적용
-                    const btn = document.getElementById('discord-btn');
-                    if (data.user) {
-                        btn.innerText = `${data.user.username} (로그아웃)`;
-                        btn.style.backgroundColor = "#248046";
-                        btn.onclick = () => {
-                            if(confirm("로그아웃 하시겠습니까?")) location.href = '/auth/logout';
-                        };
-                        applyDeveloperAuthority(data.user.isAdmin); 
-                    }
+            const data = await fetchInitData();
+            
+            if (data) {
+                // 로그인 및 권한 세팅
+                const btn = document.getElementById('discord-btn');
+                if (data.user) {
+                    btn.innerText = `${data.user.username} (로그아웃)`;
+                    btn.style.backgroundColor = "#248046";
+                    btn.onclick = () => {
+                        if(confirm("로그아웃 하시겠습니까?")) location.href = '/auth/logout';
+                    };
+                    applyDeveloperAuthority(data.user.isAdmin); 
+                }
 
-                    // 2) 주식 수식 계산 및 렌더링
-                    if (data.stockData) {
-                        const price = data.stockData.Price || 0;
-                        const oldPrice = data.stockData.OldPrice || 0;
-                        const total = data.stockData.Total || 4650000;
-                        const aprilBasePrice = 2000; // 4월 기준가 (필요 시 수정)
+                // 주식 데이터 연산
+                if (data.stockData) {
+                    const price = data.stockData.Price || 0;
+                    const oldPrice = data.stockData.OldPrice || 0;
+                    const total = data.stockData.Total || 4650000;
+                    const aprilBasePrice = 2000;
 
-                        const marketCap = price * total;
-                        const dailyRate = oldPrice ? ((price - oldPrice) / oldPrice) * 100 : 0;
-                        const aprilRate = ((price - aprilBasePrice) / aprilBasePrice) * 100;
+                    const marketCap = price * total;
+                    const dailyRate = oldPrice ? ((price - oldPrice) / oldPrice) * 100 : 0;
+                    const aprilRate = ((price - aprilBasePrice) / aprilBasePrice) * 100;
 
-                        // 텍스트 포맷팅
-                        const formatPrice = '₩' + price.toLocaleString();
-                        const formatMarketCap = '₩' + marketCap.toLocaleString();
-                        const formatDailyRate = (dailyRate > 0 ? '+ ' : '') + Math.abs(price - oldPrice).toLocaleString() + ' (' + dailyRate.toFixed(2) + '% ' + (dailyRate > 0 ? '↑' : (dailyRate < 0 ? '↓' : '-')) + ')';
-                        const formatAprilRate = '(' + aprilRate.toFixed(2) + '% ' + (aprilRate > 0 ? '↑' : (aprilRate < 0 ? '↓' : '-')) + ')';
+                    const formatPrice = '₩' + price.toLocaleString();
+                    const formatMarketCap = '₩' + marketCap.toLocaleString();
+                    
+                    const priceDiff = price - oldPrice;
+                    const arrowDaily = dailyRate > 0 ? '↑' : (dailyRate < 0 ? '↓' : '-');
+                    const arrowApril = aprilRate > 0 ? '↑' : (aprilRate < 0 ? '↓' : '-');
+                    
+                    const formatDailyRate = (priceDiff > 0 ? '+ ' : '') + Math.abs(priceDiff).toLocaleString() + ' (' + dailyRate.toFixed(2) + '% ' + arrowDaily + ')';
+                    const formatAprilRate = '(' + aprilRate.toFixed(2) + '% ' + arrowApril + ')';
 
-                        // 양쪽 화면 클래스 모두 업데이트
-                        document.querySelectorAll('.display-price').forEach(el => el.innerText = formatPrice);
-                        document.querySelectorAll('.display-marketcap').forEach(el => el.innerText = formatMarketCap);
-                        
-                        document.querySelectorAll('.display-dailyrate').forEach(el => {
-                            el.innerText = formatDailyRate;
-                            el.className = 'display-dailyrate ' + (dailyRate > 0 ? 'text-neon-red' : (dailyRate < 0 ? 'text-neon-blue' : ''));
-                        });
-                        document.querySelectorAll('.display-aprilrate').forEach(el => {
-                            el.innerText = formatAprilRate;
-                            el.className = 'display-aprilrate ' + (aprilRate > 0 ? 'text-neon-red' : (aprilRate < 0 ? 'text-neon-blue' : ''));
-                        });
-                    }
+                    document.querySelectorAll('.display-price').forEach(el => el.innerText = formatPrice);
+                    document.querySelectorAll('.display-marketcap').forEach(el => el.innerText = formatMarketCap);
+                    
+                    document.querySelectorAll('.display-dailyrate').forEach(el => {
+                        el.innerText = formatDailyRate;
+                        el.className = 'display-dailyrate stock-row ' + (dailyRate > 0 ? 'text-neon-red' : (dailyRate < 0 ? 'text-neon-blue' : ''));
+                    });
+                    document.querySelectorAll('.display-aprilrate').forEach(el => {
+                        el.innerText = formatAprilRate;
+                        el.className = 'display-aprilrate ' + (aprilRate > 0 ? 'text-neon-red' : (aprilRate < 0 ? 'text-neon-blue' : ''));
+                    });
+                } else {
+                    document.querySelectorAll('.display-price').forEach(el => el.innerText = "데이터 없음");
+                    document.querySelectorAll('.display-dailyrate').forEach(el => el.innerText = "API 응답 지연");
                 }
             }
         } catch (error) {
             console.error("초기화 실패:", error);
+            document.querySelectorAll('.display-price').forEach(el => el.innerText = "오류 발생");
         }
     }
 
     window.addEventListener('DOMContentLoaded', initializeSystem);
 </script>
-    
-    <script src="js/api.js"></script>
 </body>
 </html>
