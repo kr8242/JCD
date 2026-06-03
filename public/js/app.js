@@ -1,45 +1,54 @@
-// 전역 상태 관리 변수
+// ==========================================
+// 1. 전역 상태 변수
+// ==========================================
 let currentUser = null;
 let isDeveloper = false;
-let currentEditBlock = null;
-let modalSelectedStatus = "";
-let modalSelectedBadges = [];
+// ※ 4월 기준가 (정확한 4월 가격이 API에 없다면 이 변수값을 수정하여 기준을 맞출 수 있습니다)
+const APRIL_BASE_PRICE = 2000; 
 
-// 페이지 내비게이션 함수
-function navigate(viewName, clickedElement) {
-    document.querySelectorAll('.page-view').forEach(view => view.classList.remove('active-view'));
-    const targetView = document.getElementById('view-' + viewName);
-    if (targetView) targetView.classList.add('active-view');
-    
-    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-    if (clickedElement) clickedElement.classList.add('active');
+// ==========================================
+// 2. SPA(Single Page Application) 라우팅 기능 (/home, /stock)
+// ==========================================
+function navigate(path) {
+    // 브라우저 주소창 변경 (새로고침 없이)
+    window.history.pushState({}, path, path);
+    renderView(path);
 }
 
-// 최고 관리자 권한에 따른 UI 요소 노출/숨김 제어
-function applyDeveloperAuthority(status) {
-    isDeveloper = status;
-    const badge = document.getElementById('admin-badge');
-    const addBranchBtn = document.getElementById('btn-add-branch');
-    const addPressBtn = document.getElementById('btn-add-press');
-    const editButtons = document.querySelectorAll('.edit-btn');
-    const deletePressBtns = document.querySelectorAll('.delete-press-btn');
-
-    if (status) {
-        if (badge) badge.classList.add('active');
-        if (addBranchBtn) addBranchBtn.style.display = 'inline-block';
-        if (addPressBtn) addPressBtn.style.display = 'inline-block';
-        editButtons.forEach(el => el.style.display = 'inline-block');
-        deletePressBtns.forEach(el => el.style.display = 'inline-block');
+function renderView(path) {
+    // 모든 뷰 화면 숨기기
+    document.querySelectorAll('.page-view').forEach(view => {
+        view.style.display = 'none';
+    });
+    
+    // 경로에 맞춰 해당 뷰만 보여주기
+    if (path.includes('/stock')) {
+        const stockView = document.getElementById('view-stock');
+        if (stockView) stockView.style.display = 'block';
     } else {
-        if (badge) badge.classList.remove('active');
-        if (addBranchBtn) addBranchBtn.style.display = 'none';
-        if (addPressBtn) addPressBtn.style.display = 'none';
-        editButtons.forEach(el => el.style.display = 'none');
-        deletePressBtns.forEach(el => el.style.display = 'none');
+        // 기본 경로는 /home 으로 간주
+        const homeView = document.getElementById('view-home');
+        if (homeView) homeView.style.display = 'block';
     }
 }
 
-// 디스코드 로그인/로그아웃 버튼 UI 업데이트 및 세션 연동
+// 브라우저 '뒤로가기' 버튼 대응
+window.addEventListener('popstate', () => {
+    renderView(window.location.pathname);
+});
+
+
+// ==========================================
+// 3. 디스코드 로그인 및 권한 제어 UI
+// ==========================================
+function applyDeveloperAuthority(status) {
+    isDeveloper = status;
+    const adminElements = document.querySelectorAll('.admin-only'); // 관리자 전용 UI 요소들
+    adminElements.forEach(el => {
+        el.style.display = status ? 'inline-block' : 'none';
+    });
+}
+
 function updateAuthUI(user) {
     const btn = document.getElementById('discord-btn');
     if (!btn) return;
@@ -49,193 +58,90 @@ function updateAuthUI(user) {
         btn.innerText = `${user.username} (로그아웃)`;
         btn.style.backgroundColor = "#248046";
         btn.onclick = () => {
-            if (confirm("로그아웃 하시겠습니까?")) {
-                location.href = '/auth/logout';
-            }
+            if (confirm("로그아웃 하시겠습니까?")) location.href = '/auth/logout';
         };
-        
-        // 서버 세션에서 검증된 isAdmin 값에 따라 권한 부여 (kr8242, OAtun2 차별 없이 적용)
-        if (user.isAdmin === true) {
-            applyDeveloperAuthority(true);
-        } else {
-            applyDeveloperAuthority(false);
-        }
+        applyDeveloperAuthority(user.isAdmin); // OAtun2 등 백엔드에서 인증된 관리자 여부 적용
     } else {
         currentUser = null;
         btn.innerText = "디스코드 로그인";
         btn.style.backgroundColor = "#5865F2";
-        btn.onclick = () => {
-            location.href = '/auth/discord';
-        };
+        btn.onclick = () => location.href = '/auth/discord';
         applyDeveloperAuthority(false);
     }
 }
 
-// 상태별 텍스트 컬러 클래스 매핑
-function getStatusClass(status) {
-    if (status === '운영중') return 'text-neon-green';
-    if (status === '운영중단') return 'text-neon-red';
-    if (status === '브레이크') return 'text-neon-salmon';
-    return '';
-}
 
-// 추가 태그 배지 HTML 생성
-function getBadgesHTML(badges) {
-    return badges.map(b => {
-        if (b === '양호') return `<span class="text-neon-lightgreen" style="font-size:14px; vertical-align:super;">(양호)</span>`;
-        if (b === '혼잡') return `<span class="text-neon-red" style="font-size:14px; vertical-align:super;">(혼잡)</span>`;
-        if (b === '정배중') return `<span class="text-neon-blue" style="font-size:14px; vertical-align:super;">(정배중)</span>`;
-        return '';
-    }).join(' ');
-}
+// ==========================================
+// 4. 외부 주식 데이터 계산 및 렌더링 로직
+// ==========================================
+function renderStockData(stockData) {
+    if (!stockData) return;
 
-// 모달 내부 미리보기 갱신
-function updateModalPreview() {
-    if (!currentEditBlock) return;
-    const storeName = currentEditBlock.querySelector('.store-name').innerText;
-    document.getElementById('modal-text-after').innerHTML = `수정후 : ${storeName} : <span class="${getStatusClass(modalSelectedStatus)}">${modalSelectedStatus}</span> ${getBadgesHTML(modalSelectedBadges)}`;
-}
+    const price = stockData.Price;         // 현재 호가
+    const oldPrice = stockData.OldPrice;   // 시가
+    const total = stockData.Total;         // 발행된 주식 수
+    
+    // 요청하신 공식에 따른 계산 로직
+    const marketCap = price * total; 
+    const dailyRate = oldPrice ? ((price - oldPrice) / oldPrice) * 100 : 0;
+    const aprilRate = ((price - APRIL_BASE_PRICE) / APRIL_BASE_PRICE) * 100;
 
-// 모달 내 선택된 칩 하이라이트 효과
-function highlightModalChips() {
-    document.querySelectorAll('.p4-btn-group .chip-btn').forEach(btn => {
-        const text = btn.innerText;
-        if (text === modalSelectedStatus || modalSelectedBadges.includes(text)) {
-            btn.classList.add('selected-chip');
-        } else {
-            btn.classList.remove('selected-chip');
-        }
+    // 통화 및 퍼센트 포맷팅
+    const formatPrice = price.toLocaleString() + '원';
+    const formatMarketCap = marketCap.toLocaleString() + '원';
+    const formatDailyRate = dailyRate.toFixed(2) + '%';
+    const formatAprilRate = aprilRate.toFixed(2) + '%';
+
+    // HTML 요소에 텍스트 반영 (클래스 기반으로 찾아 홈과 주식화면 양쪽에 동시 적용)
+    document.querySelectorAll('.display-price').forEach(el => el.innerText = formatPrice);
+    document.querySelectorAll('.display-marketcap').forEach(el => el.innerText = formatMarketCap);
+    
+    // 색상 처리 (상승: 빨강, 하락: 파랑)
+    document.querySelectorAll('.display-dailyrate').forEach(el => {
+        el.innerText = (dailyRate > 0 ? '+' : '') + formatDailyRate;
+        el.style.color = dailyRate > 0 ? '#ff4d4d' : (dailyRate < 0 ? '#4d79ff' : '#d8dee8');
     });
-}
+    
+    document.querySelectorAll('.display-aprilrate').forEach(el => {
+        el.innerText = (aprilRate > 0 ? '+' : '') + formatAprilRate;
+        el.style.color = aprilRate > 0 ? '#ff4d4d' : (aprilRate < 0 ? '#4d79ff' : '#d8dee8');
+    });
 
-// 운영현황 수정 팝업 열기
-function openPopup(btn) {
-    if (!isDeveloper) return;
-    currentEditBlock = btn.closest('.store-status-block');
+    // ==========================================
+    // 5. stock.html (그래프) Iframe 동적 삽입
+    // ==========================================
+    const iframeHTML = `<iframe src="/stock.html" style="width: 100%; height: 100%; border: none; background: transparent;" title="주식 차트"></iframe>`;
     
-    const storeName = currentEditBlock.querySelector('.store-name').innerText;
-    const currentStatus = currentEditBlock.querySelector('.store-status-text').innerText;
-    const currentNote = currentEditBlock.querySelector('.store-note-text').innerText.replace("비고 : ", "");
-    const badgeHTML = currentEditBlock.querySelector('.store-badge-area').innerHTML;
-    
-    modalSelectedStatus = currentStatus;
-    modalSelectedBadges = [];
-    if (badgeHTML.includes("양호")) modalSelectedBadges.push("양호");
-    if (badgeHTML.includes("혼잡")) modalSelectedBadges.push("혼잡");
-    if (badgeHTML.includes("정배중")) modalSelectedBadges.push("정배중");
-    
-    document.getElementById('modal-note-input').value = currentNote;
-    document.getElementById('modal-text-before').innerHTML = `수정전 : ${storeName} : <span class="${getStatusClass(currentStatus)}">${currentStatus}</span> ${badgeHTML}`;
-    
-    updateModalPreview();
-    highlightModalChips();
-    
-    document.getElementById('edit-popup').style.style.display = 'flex';
-}
-
-function closePopup() { 
-    document.getElementById('edit-popup').style.display = 'none'; 
-}
-
-function setModalStatus(status) {
-    modalSelectedStatus = status;
-    updateModalPreview();
-    highlightModalChips();
-}
-
-function toggleModalBadge(badge) {
-    const idx = modalSelectedBadges.indexOf(badge);
-    if (idx > -1) {
-        modalSelectedBadges.splice(idx, 1);
-    } else {
-        modalSelectedBadges.push(badge);
+    const homeGraphContainer = document.getElementById('home-graph-container');
+    if (homeGraphContainer && !homeGraphContainer.innerHTML.includes('iframe')) {
+        homeGraphContainer.innerHTML = iframeHTML;
     }
-    updateModalPreview();
-    highlightModalChips();
+
+    const stockGraphContainer = document.getElementById('stock-graph-container');
+    if (stockGraphContainer && !stockGraphContainer.innerHTML.includes('iframe')) {
+        stockGraphContainer.innerHTML = iframeHTML;
+    }
 }
 
-// 매장 수정 데이터 반영 (원래 로직 유지)
-function submitStoreEdit() {
-    if (!isDeveloper || !currentEditBlock) return;
-    
-    const noteValue = document.getElementById('modal-note-input').value.trim() || "X";
-    const statusSpan = currentEditBlock.querySelector('.store-status-text');
-    
-    statusSpan.innerText = modalSelectedStatus;
-    statusSpan.className = `store-status-text ${getStatusClass(modalSelectedStatus)}`;
-    
-    currentEditBlock.querySelector('.store-badge-area').innerHTML = getBadgesHTML(modalSelectedBadges);
-    currentEditBlock.querySelector('.store-note-text').innerText = `비고 : ${noteValue}`;
-    
-    closePopup();
-    alert("운영현황 데이터가 임시 동기화되었습니다!");
-}
 
-// 신규 지점 추가 추가 로직
-function addNewStoreBranch() {
-    if (!isDeveloper) return;
-    const storeName = prompt("추가할 지점명을 입력하세요 (예: 3호점):");
-    if (!storeName || !storeName.trim()) return;
-    const storeStatus = prompt("상태를 입력하세요 (운영중 / 운영중단 / 브레이크):", "운영중");
-    if (!storeStatus) return;
-    const storeNote = prompt("비고 사항을 입력하세요:", "X");
-    if (!storeNote) return;
-
-    const container = document.getElementById('store-list-container');
-    const newBlock = document.createElement('div');
-    newBlock.className = 'store-status-block';
-    newBlock.innerHTML = `
-        <div class="store-title-area">
-            <span class="store-name">${storeName.trim()}</span> : 
-            <span class="store-status-text ${getStatusClass(storeStatus)}">${storeStatus}</span>
-            <span class="store-badge-area"></span>
-        </div>
-        <div class="store-note-text" style="margin-top:5px;">비고 : ${storeNote}</div>
-        <button class="pixel-rect-btn edit-btn" style="display:inline-block;" onclick="openPopup(this)">수정하기</button>
-    `;
-    container.appendChild(newBlock);
-    alert(`${storeName} 지점이 리스트에 임시 추가되었습니다.`);
-}
-
-// 렌더링: DB에서 가져온 보도자료 화면에 그리기
-function renderPressReleases(pressReleases) {
-    const container = document.getElementById('press-list-container');
-    if (!container) return;
-    container.innerHTML = '';
-
-    pressReleases.forEach(article => {
-        const item = document.createElement('div');
-        item.className = 'press-item';
-        item.innerHTML = `
-            <div class="press-item-title">
-                ${article.title}
-                <button class="delete-press-btn" onclick="deletePressArticle(this)">삭제</button>
-            </div>
-            <div>${article.content}</div>
-        `;
-        container.appendChild(item);
-    });
-}
-
-// 렌더링: 주가 데이터 업데이트
-function renderStockData(stock) {
-    // 필요에 따라 홈 화면 및 주가 탭 데이터에 바인딩 처리
-    console.log("주가 데이터 로드 완료:", stock);
-}
-
-// 웹사이트 초기 로드 및 백엔드 데이터 연동 함수 (★ 핵심 통합 포인트)
+// ==========================================
+// 6. 초기 웹사이트 구동
+// ==========================================
 async function initWebsite() {
+    // 1. 현재 접속한 URL 주소에 따라 화면 렌더링 (/home 또는 /stock)
+    renderView(window.location.pathname);
+
     try {
-        // api.js 내의 가져오기 함수 호출 또는 직접 fetch 사용
+        // 2. api.js를 통해 서버(디스코드 세션 + 주식 API 프록시) 데이터 로드
         const data = await fetchInitData(); 
         
         if (data) {
-            // 1. 보도자료 및 주가 데이터 렌더링
-            if (data.pressReleases) renderPressReleases(data.pressReleases);
-            if (data.stock) renderStockData(data.stock);
-            
-            // 2. 유저 인증 상태 확인 및 UI 업데이트 처리 (OAtun2 권한 포함 자동 핸들링)
             updateAuthUI(data.user);
+            if (data.stockData) {
+                renderStockData(data.stockData);
+            }
+            // 기존 보도자료 렌더링 함수가 있다면 이 부분에 추가
+            // if (data.pressReleases) renderPressReleases(data.pressReleases);
         }
     } catch (err) {
         console.error("초기 데이터 로드 중 에러 발생:", err);
@@ -243,5 +149,5 @@ async function initWebsite() {
     }
 }
 
-// DOM 생성이 완료되면 시스템 구동
+// DOM 생성이 완료되면 시스템 시작
 window.addEventListener('DOMContentLoaded', initWebsite);

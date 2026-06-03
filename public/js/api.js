@@ -1,24 +1,24 @@
 /**
- * 장충동왕국밥 통합 API 통신 레이어
+ * [장충동왕국밥] 통합 API 브릿지
+ * 백엔드(server.js)를 통해 외부 주식 데이터 및 유저 세션을 안전하게 가져옵니다.
  */
 
-// 1. 초기 데이터(보도자료, 주가, 유저 세션 정보)를 서버로부터 가져오는 함수
 async function fetchInitData() {
     try {
-        // netlify.toml 리다이렉트 설정에 의해 /.netlify/functions/server/api/init-data 로 라우팅됨
+        // netlify.toml 설정에 따라 /.netlify/functions/server/api/init-data 로 연결됨
         const response = await fetch('/api/init-data');
         
         if (!response.ok) {
-            throw new Error(`서버 응답 오류: ${response.status}`);
+            throw new Error(`통신 실패 (Status: ${response.status})`);
         }
         
         const data = await response.json();
-        return data;
+        
+        // data 안에는 { pressReleases, stockData, user } 가 포함되어 반환됩니다.
+        return data; 
+        
     } catch (error) {
-        console.error("fetchInitData 통신 중 에러 발생:", error);
-        return null;
+        console.error("API 통신 오류:", error);
+        return null; // 오류 발생 시 app.js에서 초기 데이터 없음(null)으로 안전하게 처리
     }
 }
-
-// 2. 필요 시 추가적인 백엔드 데이터 송수신 함수를 이 아래에 확장 가능합니다.
-// 예: 지점 저장 API, 보도자료 DB 저장 API 등
